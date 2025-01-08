@@ -1,4 +1,4 @@
-@Trackster.API_HostAddress = http://localhost:5246
+@Trackster.API_HostAddress = http://localhost:7023
 
 GET {{Trackster.API_HostAddress}}/weatherforecast/
 Accept: application/json

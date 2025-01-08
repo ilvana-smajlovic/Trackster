@@ -8,7 +8,7 @@ namespace Trackster.API.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize]
+    //[Authorize]
     public class BaseController<TModel, TSearch> : ControllerBase where TSearch : BaseSearchObject
     {
         protected IService<TModel, TSearch> _service;
@@ -19,6 +19,7 @@ namespace Trackster.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public virtual PagedResult<TModel> GetList([FromQuery] TSearch searchObject)
         {
             return _service.GetPaged(searchObject);

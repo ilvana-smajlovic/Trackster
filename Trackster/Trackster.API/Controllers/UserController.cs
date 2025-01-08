@@ -15,13 +15,14 @@ namespace Trackster.API.Controllers
         protected IUserService _service;
         public UserController(IUserService service) : base(service)
         {
-            [HttpPost("login")]
-            [AllowAnonymous]
-            Users Login(string username, string password)
-            {
-                return (_service as IUserService).Login(username, password);
-            }
+            _service = service;
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        public Users Login(string username, string password)
+        {
+            return _service.Login(username, password);
+        }
     }
 }

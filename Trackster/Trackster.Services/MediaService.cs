@@ -1,13 +1,5 @@
 ﻿using MapsterMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Trackster.Model;
 using Trackster.Model.Requests;
 using Trackster.Model.SearchObjects;
@@ -28,6 +20,7 @@ namespace Trackster.Services
         {
             _logger = logger;
             BaseMediaState = baseMediaState;
+            Context = context;
         }
 
         public virtual PagedResult<Media> GetList(MediaSearchObject searchObject)

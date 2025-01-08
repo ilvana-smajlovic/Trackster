@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Services.Users;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace Trackster.Services
 {
@@ -26,6 +27,8 @@ namespace Trackster.Services
         public UserService(TracksterContext context, IMapper mapper, ILogger<UserService> logger) : base(context, mapper)
         {
             _logger = logger;
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Users> GetList(UserSearchObject searchObject)

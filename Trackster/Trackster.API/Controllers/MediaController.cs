@@ -14,6 +14,7 @@ namespace Trackster.API.Controllers
         protected IMediaService _service;
         public MediaController(IMediaService service) : base(service) 
         {
+            _service = service;
         }
 
         [HttpPut("{id}/activate")]
