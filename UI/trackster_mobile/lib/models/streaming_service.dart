@@ -12,7 +12,7 @@ class StreamingService {
 
   factory StreamingService.fromJson(Map<String, dynamic> json) =>
       _$StreamingServiceFromJson(json);
-  Map<String, dynamic> toJson() => _$StreamingToJson(this);
+  Map<String, dynamic> toJson() => _$StreamingServiceToJson(this);
 
   @override
   bool operator ==(Object other) =>

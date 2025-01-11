@@ -20,6 +20,8 @@ namespace Trackster.Services
 
         public NotificationService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Notifications> GetList(NotificationSearchObject searchObject)

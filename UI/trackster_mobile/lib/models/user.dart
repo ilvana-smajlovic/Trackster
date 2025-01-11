@@ -8,10 +8,13 @@ class User {
   int? user_id;
   String? username;
   String? email;
+  String? password_hash;
+  String? password_salt;
   String? bio;
   String? profile_picture;
   DateTime? created_at;
-  List<Role>? user_roles;
+  int? role_id;
+  Role? user_role;
   bool? status;
 
   User({
@@ -19,14 +22,24 @@ class User {
     this.username,
     this.email,
     this.bio,
+    this.password_hash,
+    this.password_salt,
     this.profile_picture,
     this.created_at,
-    this.user_roles,
+    this.role_id,
+    this.user_role,
     this.status,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
+
+  @override
+  String toString() {
+    return 'User(user_id: $user_id, username: $username, email: $email, '
+        'bio: $bio, profile_picture: $profile_picture, created_at: $created_at, '
+        'user_roles: $user_role, status: $status)';
+  }
 
   @override
   bool operator ==(Object other) =>

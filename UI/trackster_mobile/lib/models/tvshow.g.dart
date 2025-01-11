@@ -7,8 +7,10 @@ part of 'tvshow.dart';
 // **************************************************************************
 
 TVShow _$TVShowFromJson(Map<String, dynamic> json) => TVShow(
-      tvshow_id: (json['id'] as num?)?.toInt(),
-      media: json['media'] as Media?,
+      tvshow_id: (json['tvshow_id'] as num?)?.toInt(),
+      media: json['media'] == null
+          ? null
+          : Media.fromJson(json['media'] as Map<String, dynamic>),
       season_count: (json['season_count'] as num?)?.toInt(),
       episode_count: (json['episode_count'] as num?)?.toInt(),
       episode_runtime: (json['episode_runtime'] as num?)?.toInt(),

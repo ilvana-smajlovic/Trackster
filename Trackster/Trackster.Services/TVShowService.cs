@@ -20,6 +20,8 @@ namespace Trackster.Services
 
         public TVShowService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<TVShows> GetList(NameSearchObject searchObject)

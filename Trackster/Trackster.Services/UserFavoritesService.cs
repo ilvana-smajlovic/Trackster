@@ -20,6 +20,8 @@ namespace Trackster.Services
 
         public UserFavoritesService(TracksterContext context, IMapper mapper) : base(context, mapper) 
         {
+            Context = context;
+            Mapper = mapper;
         }
         public virtual PagedResult<UserFavorites> GetList(UserFavoriteSearchObject searchObject)
         {
@@ -55,8 +57,10 @@ namespace Trackster.Services
         public UserFavorites Insert(UserFavoritesInsertRequest request)
         {
             UserFavorites favorite = new UserFavorites();
+         
             Mapper.Map(request, favorite);
 
+            favorite.added_at = DateTime.Now;
             Context.UserFavorites.Add(favorite);
             Context.SaveChanges();
 

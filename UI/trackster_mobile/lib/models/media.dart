@@ -19,7 +19,7 @@ class Media {
   String? backdrop;
   Language? language;
   StreamingService? streaming_service;
-  Bool? state;
+  bool? state;
   String? state_machine;
 
   Media({

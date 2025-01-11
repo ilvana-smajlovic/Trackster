@@ -1,10 +1,9 @@
-import 'dart:convert';
-import 'dart:js';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:trackster_mobile/models/media.dart';
-import 'package:trackster_mobile/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:trackster_mobile/providers/media_provider.dart';
+
+import 'media_screen.dart';
+import 'menu.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,46 +11,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<MediaItem> _mediaItems = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    fetchMedia();
-  }
-
-  fetchMedia() async {
-    String? _baseUrl;
-
-    const apiHost =
-        String.fromEnvironment("API_HOST", defaultValue: "10.0.2.2");
-    const apiPort = String.fromEnvironment("API_PORT", defaultValue: "7023");
-    _baseUrl = "http://$apiHost:$apiPort/Media/GetList";
-
-    try {
-      var uri = Uri.parse(_baseUrl);
-      var response = await http.get(uri);
-
-      var data = jsonDecode(response.body);
-
-      setState(() {
-        _mediaItems = List<MediaItem>.from(
-            data.map((item) => MediaItem(item['title'], item['imageUrl'])));
-      });
-    } catch (e) {
-      throw Exception('Failed to load media: $e');
-    }
+    // Fetch the media items when the screen is initialized
+    Future.delayed(Duration.zero, () {
+      Provider.of<MediaProvider>(context, listen: false).getAllMedia();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: Color(0xFF81689D),
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.menu),
-          onPressed: () {},
+          onPressed: () {
+            _scaffoldKey.currentState!.openDrawer();
+          },
         ),
         actions: [
           Padding(
@@ -62,37 +44,57 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      drawer: Menu(),
       body: Container(
         color: Color(0xFF81689D),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: ListView(
-            children: [
-              SizedBox(height: 10),
-              // Search Bar
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Color(0xFF51376C),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.search, color: Colors.white),
-                    border: InputBorder.none,
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: Colors.white54),
+          child: Consumer<MediaProvider>(
+            builder: (context, mediaProvider, child) {
+              if (mediaProvider.isLoading) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (mediaProvider.mediaItems.isEmpty) {
+                return Center(child: Text('No media items available.'));
+              }
+
+              final mediaItems = mediaProvider.mediaItems
+                  .map((media) => MediaItem(
+                    id: media.media_id!.toInt(),
+                    title: media.title ?? "Untitled",
+                    imageUrl: media.picture ?? '',
+              ))
+                  .toList();
+
+              return ListView(
+                children: [
+                  SizedBox(height: 10),
+                  // Search Bar
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF51376C),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.search, color: Colors.white),
+                        border: InputBorder.none,
+                        hintText: 'Search',
+                        hintStyle: TextStyle(color: Colors.white54),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // Trending Now Section
-              if (_mediaItems.isNotEmpty)
-                Section(
-                  title: 'Trending Now',
-                  items: _mediaItems,
-                ),
-            ],
+                  SizedBox(height: 20),
+                  // Trending Now Section
+                  Section(
+                    title: 'Trending Now',
+                    items: mediaItems,
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -121,7 +123,7 @@ class Section extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: items.map((item) => item.buildWidget()).toList(),
+            children: items.map((item) => item.buildWidget(context)).toList(),
           ),
         ),
         Divider(color: Colors.white54),
@@ -131,13 +133,24 @@ class Section extends StatelessWidget {
 }
 
 class MediaItem {
+  final int id;
   final String title;
   final String imageUrl;
 
-  MediaItem(this.title, this.imageUrl);
+  MediaItem({required this.id, required this.title, required this.imageUrl});
 
-  Widget buildWidget() {
-    return Padding(
+  Widget buildWidget(BuildContext context) {
+    return GestureDetector(
+        onTap: () {
+      // Navigate to MediaScreen with only the mediaId
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => MediaScreen(mediaId: id),
+        ),
+      );
+    },
+    child: Padding(
       padding: const EdgeInsets.only(right: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,6 +180,7 @@ class MediaItem {
           ),
         ],
       ),
+     )
     );
   }
 }

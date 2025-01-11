@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public WatchlistMovieService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
         public virtual PagedResult<WatchlistMovie> GetList(WatchlistMovieSearchObject searchObject)
         {
@@ -70,6 +72,8 @@ namespace Trackster.Services
         {
             WatchlistMovie movie = new WatchlistMovie();
             Mapper.Map(request, movie);
+
+            movie.added_at = DateTime.Now;
 
             Context.WatchlistMovie.Add(movie);
             Context.SaveChanges();

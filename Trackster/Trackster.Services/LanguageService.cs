@@ -18,7 +18,9 @@ namespace Trackster.Services
         public IMapper Mapper { get; set; }
 
         public LanguageService(TracksterContext context, IMapper mapper) : base(context, mapper)
-        {  
+        {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Languages> GetList(NameSearchObject searchObject)

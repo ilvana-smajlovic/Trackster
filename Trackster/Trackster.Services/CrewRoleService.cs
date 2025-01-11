@@ -21,6 +21,8 @@ namespace Trackster.Services
 
         public CrewRoleService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<CrewRoles> GetList(NameSearchObject searchObject)

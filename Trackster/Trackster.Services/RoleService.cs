@@ -18,6 +18,8 @@ namespace Trackster.Services
 
         public RoleService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Roles> GetList(NameSearchObject searchObject)

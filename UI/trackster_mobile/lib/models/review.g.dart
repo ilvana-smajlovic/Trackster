@@ -7,13 +7,19 @@ part of 'review.dart';
 // **************************************************************************
 
 Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
-      review_id: (json['person_id'] as num?)?.toInt(),
-      user: json['user'] as User?,
-      media: json['media'] as Media?,
+      review_id: (json['review_id'] as num?)?.toInt(),
+      user: json['user'] == null
+          ? null
+          : User.fromJson(json['user'] as Map<String, dynamic>),
+      media: json['media'] == null
+          ? null
+          : Media.fromJson(json['media'] as Map<String, dynamic>),
       rating: (json['rating'] as num?)?.toInt(),
       review_text: json['review_text'] as String?,
       isApproved: json['isApproved'] as bool?,
-      created_at: json['created_at'] as DateTime?,
+      created_at: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
     );
 
 Map<String, dynamic> _$ReviewToJson(Review instance) => <String, dynamic>{
@@ -23,5 +29,5 @@ Map<String, dynamic> _$ReviewToJson(Review instance) => <String, dynamic>{
       'rating': instance.rating,
       'review_text': instance.review_text,
       'isApproved': instance.isApproved,
-      'created_at': instance.created_at,
+      'created_at': instance.created_at?.toIso8601String(),
     };

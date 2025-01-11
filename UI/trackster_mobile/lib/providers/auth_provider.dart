@@ -11,14 +11,17 @@ class AuthProvider extends BaseProvider<User> {
   static String? password;
   static int? userId;
 
+  static User? user;
+
+
   static void setUser(User user) {
     userId = user.user_id;
   }
 
   Future<User?> login(String username, String password) async {
     try {
-      final url = Uri.parse("${baseUrl}User/login");
-
+      final url = Uri.parse(
+          "${baseUrl}User/Login?username=$username&password=$password");
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -26,7 +29,14 @@ class AuthProvider extends BaseProvider<User> {
       );
 
       if (response.statusCode == 200) {
-        final user = User.fromJson(jsonDecode(response.body));
+        final userJson = jsonDecode(response.body);
+        print("user: $userJson");
+        user = User.fromJson(userJson);
+        print("user: $user");
+
+        AuthProvider.username = username;
+        AuthProvider.password = password;
+
         return user;
       } else {
         return null;
@@ -35,4 +45,5 @@ class AuthProvider extends BaseProvider<User> {
       return null;
     }
   }
+
 }

@@ -13,7 +13,7 @@ StreamingService _$StreamingServiceFromJson(Map<String, dynamic> json) =>
       url: json['url'] as String?,
     );
 
-Map<String, dynamic> _$StreamingToJson(StreamingService instance) =>
+Map<String, dynamic> _$StreamingServiceToJson(StreamingService instance) =>
     <String, dynamic>{
       'streaming_service_id': instance.streaming_service_id,
       'service_name': instance.service_name,

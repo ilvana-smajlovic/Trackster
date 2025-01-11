@@ -1,18 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:trackster_mobile/home_screen.dart';
-import 'package:trackster_mobile/login.dart';
+import 'package:provider/provider.dart';
+import 'package:trackster_mobile/providers/favorites_provider.dart';
+import 'package:trackster_mobile/providers/media_provider.dart';
+import 'package:trackster_mobile/providers/watchlist_movie_provider.dart';
+
+import 'home_screen.dart';
+import 'login.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => MediaProvider()),
+      ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+      ChangeNotifierProvider(create: (_) => WatchlistMovieProvider()),
+    ],
+    child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: HomeScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => MediaProvider(),
+      child: MaterialApp(
+        initialRoute: '/login',
+        routes: {
+          '/login': (context) => LoginScreen(),
+          '/home': (context) => HomeScreen(),  // HomeScreen needs to be defined
+        },
+      ),
     );
   }
 }

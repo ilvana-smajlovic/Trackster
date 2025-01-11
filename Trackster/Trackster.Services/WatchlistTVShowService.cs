@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public WatchlistTVShowService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
         public virtual PagedResult<WatchlistTVShow> GetList(WatchlistTVShowSearchObject searchObject)
         {
@@ -71,6 +73,7 @@ namespace Trackster.Services
             WatchlistTVShow tvshow = new WatchlistTVShow();
             Mapper.Map(request, tvshow);
 
+            tvshow.added_at = DateTime.Now;
             Context.WatchlistTVShow.Add(tvshow);
             Context.SaveChanges();
 

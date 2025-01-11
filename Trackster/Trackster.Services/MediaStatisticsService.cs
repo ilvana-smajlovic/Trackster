@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public MediaStatisticsService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<MediaStatistics> GetList(MediaStatisticsSearchObject searchObject)

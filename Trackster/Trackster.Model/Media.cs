@@ -28,6 +28,7 @@ namespace Trackster.Model
         [ForeignKey("streaming_service_id")]
         public virtual StreamingServices streaming_service { get; set; }
         public int streaming_service_id { get; set; }
+        public string trailerUrl { get; set; }
         public bool? state { get; set; }
         public string? state_machine { get; set; }
     }

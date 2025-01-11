@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public UserFollowService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<UserFollow> GetList(UserFollowSearchObject searchObject)

@@ -21,6 +21,7 @@ namespace Trackster.Services
             _logger = logger;
             BaseMediaState = baseMediaState;
             Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Media> GetList(MediaSearchObject searchObject)

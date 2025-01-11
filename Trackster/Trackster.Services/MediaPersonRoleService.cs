@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public MediaPersonRoleService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<MediaPersonCrewRole> GetList(MediaPersonRoleSearchObject searchObject)

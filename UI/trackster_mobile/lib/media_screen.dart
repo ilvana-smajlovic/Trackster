@@ -1,236 +1,254 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:trackster_mobile/providers/favorites_provider.dart';
+import 'package:trackster_mobile/providers/media_provider.dart';
+import 'package:trackster_mobile/providers/watchlist_movie_provider.dart';
 
-class MediaScreen extends StatelessWidget {
-  final Map<String, dynamic> mediaDetails;
+class MediaScreen extends StatefulWidget {
+  final int mediaId;
 
-  const MediaScreen({required this.mediaDetails});
+  const MediaScreen({required this.mediaId});
+
+  @override
+  _MediaScreenState createState() => _MediaScreenState();
+}
+
+class _MediaScreenState extends State<MediaScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MediaProvider>(context, listen: false)
+          .getMediaById(widget.mediaId);
+      }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final mediaProvider = Provider.of<MediaProvider>(context);
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    final watchlistMovieProvider = Provider.of<WatchlistMovieProvider>(context);
+    final mediaDetails = mediaProvider.selectedMedia;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(mediaDetails['title']),
-        backgroundColor: const Color(0xFF81689D),
+        backgroundColor: const Color(0xFF4E3A6A),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {},
+        ),
+        title: TextField(
+          decoration: InputDecoration(
+            hintText: 'Search',
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.2),
+            prefixIcon: const Icon(Icons.search, color: Colors.white),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
+      body: mediaProvider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : mediaDetails == null
+          ? const Center(child: Text('Media details not found.'))
+          : SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner with poster overlay
             Stack(
               children: [
-                Image.network(mediaDetails['bannerUrl'],
-                    fit: BoxFit.cover, width: double.infinity),
+                Image.network(
+                  mediaDetails.backdrop!,
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
                 Positioned(
                   left: 16,
-                  top: 16,
-                  child: Image.network(mediaDetails['posterUrl'], height: 150),
+                  top: 120,
+                  child: Image.network(
+                    mediaDetails.picture!,
+                    height: 100,
+                    width: 70,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            // Genres, rating, buttons
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: mediaDetails['genres']
-                        .map<Widget>((genre) => Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.purple[700],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                genre,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ))
+                  /*Row(
+                    children: mediaDetails.genres
+                        .map((genre) => Container(
+                      margin:
+                      const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade800,
+                        borderRadius:
+                        BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        genre,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ))
                         .toList(),
-                  ),
+                  ),*/
                   const SizedBox(height: 8),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '${mediaDetails['rating']} ⭐',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          const Icon(Icons.star,
+                              color: Colors.yellow, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${mediaDetails.rating}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () {},
                             icon: const Icon(Icons.favorite_border,
                                 color: Colors.red),
+                            onPressed: () {
+                              // Call addToFavorites when the heart icon is pressed
+                              favoritesProvider.addToFavorites(
+                                mediaDetails.media_id
+                              );
+                            },
                           ),
                           IconButton(
-                            onPressed: () {},
                             icon: const Icon(Icons.bookmark_border,
                                 color: Colors.white),
+                            onPressed: () {
+                              watchlistMovieProvider.addToWatchlist(context,
+                                  mediaDetails.media_id);
+                            },
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  // Title, year, description
+                  const SizedBox(height: 16),
                   Text(
-                    '${mediaDetails['title']} (${mediaDetails['releaseYear']})',
+                    '${mediaDetails.title} (${mediaDetails.release_date})',
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(mediaDetails['description']),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white),
-            // Creators section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Creators:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    mediaDetails.description!,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const Divider(color: Colors.white, height: 30),
+                  Text(
+                    'Creators',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: mediaDetails['creators']
-                        .map<Widget>((creator) => Container(
-                              margin: const EdgeInsets.only(right: 16),
-                              child: Column(
-                                children: [
-                                  Text(creator['name'],
-                                      style:
-                                          const TextStyle(color: Colors.white)),
-                                  Text(
-                                    creator['role'],
-                                    style: const TextStyle(
-                                        color: Colors.white54, fontSize: 12),
-                                  ),
-                                ],
+                  /*Row(
+                    children: mediaDetails.creators
+                        .map<Widget>((creator) => Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            creator.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(creator.role),
+                        ],
+                      ),
+                    ))
+                        .toList(),
+                  ),
+                  const Divider(color: Colors.white, height: 30),
+                  Text(
+                    'Cast and Crew',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: mediaDetails.cast.length,
+                      itemBuilder: (context, index) {
+                        final cast = mediaDetails.cast[index];
+                        return Container(
+                          width: 80,
+                          margin: const EdgeInsets.only(right: 8),
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius:
+                                BorderRadius.circular(8),
+                                child: Image.network(
+                                  cast.picture,
+                                  height: 60,
+                                  width: 60,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white),
-            // Cast section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Cast:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: mediaDetails['cast']
-                        .map<Widget>((actor) => Container(
-                              margin: const EdgeInsets.only(right: 16),
-                              child: Column(
-                                children: [
-                                  Image.network(actor['photoUrl'], height: 80),
-                                  const SizedBox(height: 4),
-                                  Text(actor['name'],
-                                      style:
-                                          const TextStyle(color: Colors.white)),
-                                  Text(actor['role'],
-                                      style: const TextStyle(
-                                          color: Colors.white54, fontSize: 12)),
-                                ],
+                              const SizedBox(height: 4),
+                              Text(
+                                cast.name,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white),
-            // Streaming services
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Watch on:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: mediaDetails['streamingServices']
-                        .map<Widget>(
-                            (service) => Image.network(service, height: 50))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white),
-            // Similar media
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('More Like This:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: mediaDetails['similarMedia']
-                        .map<Widget>((media) => Column(
-                              children: [
-                                Image.network(media['imageUrl'], height: 80),
-                                const SizedBox(height: 4),
-                                Text(media['title'],
-                                    style:
-                                        const TextStyle(color: Colors.white)),
-                              ],
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white),
-            // Reviews
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Reviews:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Column(
-                    children: mediaDetails['reviews']
-                        .map<Widget>((review) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(review['title'],
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold)),
-                                  Text(review['content'],
-                                      style: const TextStyle(
-                                          color: Colors.white70)),
-                                ],
-                              ),
-                            ))
-                        .toList(),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  )*/
+                  const Divider(color: Colors.white, height: 30),
+                  Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple.shade800,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      onPressed: () {
+                        // Open trailer link
+                      },
+                      child: const Text('Watch Trailer'),
+                    ),
                   ),
                 ],
               ),

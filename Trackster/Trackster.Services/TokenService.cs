@@ -19,6 +19,8 @@ namespace Trackster.Services
 
         public TokenService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Tokens> GetList(TokenSearchObject searchObject)

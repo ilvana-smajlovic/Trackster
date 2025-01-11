@@ -53,28 +53,40 @@ abstract class BaseProvider<T> with ChangeNotifier {
     }
   }
 
-  Future<List<T>> getAll() async {
-    var url = "$_baseUrl$_endpoint";
+  Future<List<T>> getAll({String? subRoute}) async {
+    var uri = Uri.parse("$_baseUrl$subRoute");
+    print('URI: $uri');
 
-    var uri = Uri.parse(url);
     var headers = createHeaders();
+    print("HEADER IN GET ALL: $headers");
 
     var response = await http.get(uri, headers: headers);
 
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      // Decode the response body
+      var decodedBody = jsonDecode(response.body);
 
-      print("data: $data");
-      return data;
+      // Check for the 'resultList' key in the response
+      if (decodedBody is Map<String, dynamic> && decodedBody['resultList'] is List) {
+        final List<dynamic> resultList = decodedBody['resultList'];
+        return resultList.map((item) => fromJson(item)).toList();
+      } else {
+        throw Exception("Unexpected response format: ${response.body}");
+      }
     } else {
-      throw Exception("Unknown error");
+      throw Exception("Failed to load data: ${response.statusCode}");
     }
   }
 
-  Future<T> insert(dynamic request) async {
-    var url = "$_baseUrl$_endpoint";
+
+
+
+  Future<T> insert(String? subRoute, dynamic request) async {
+    var url = "$_baseUrl$subRoute";
     var uri = Uri.parse(url);
+
     var headers = createHeaders();
+    print("URL: $url");
 
     var jsonRequest = jsonEncode(request);
 
@@ -83,6 +95,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       if (isValidResponse(response)) {
         var data = jsonDecode(response.body);
+        print("RESPONSE DATA: $data");
         return fromJson(data);
       } else {
         throw Exception("Server returned status code: ${response.statusCode}");
@@ -126,6 +139,9 @@ abstract class BaseProvider<T> with ChangeNotifier {
     String username = AuthProvider.username ?? "";
     String password = AuthProvider.password ?? "";
 
+    print("Username: $username");
+    print("Password: $password");
+
     String basicAuth =
         "Basic ${base64Encode(utf8.encode('$username:$password'))}";
 
@@ -133,7 +149,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
       "Content-Type": "application/json",
       "Authorization": basicAuth
     };
-
+    print("HEADER: $headers");
     return headers;
   }
 
@@ -183,13 +199,12 @@ abstract class BaseProvider<T> with ChangeNotifier {
     }
   }
 
-  Future<T> getById(int id) async {
-    var url = "$_baseUrl$_endpoint/$id";
+  Future<T> getById(String subRoute, int id) async {
+    var url = "$_baseUrl$_endpoint/$subRoute/$id";
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
     var response = await http.get(uri, headers: headers);
-
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
       return fromJson(data);

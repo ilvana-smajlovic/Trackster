@@ -13,6 +13,5 @@ namespace Trackster.Model.Requests
         public int tvshow_id { get; set; }
         public string watch_state { get; set; }
         public int? rating { get; set; }
-        public DateTime added_at { get; set; }
     }
 }

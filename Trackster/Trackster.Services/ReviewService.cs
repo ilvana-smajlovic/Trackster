@@ -18,6 +18,8 @@ namespace Trackster.Services
 
         public ReviewService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<Reviews> GetList(ReviewSearchObject searchObject)

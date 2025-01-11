@@ -11,6 +11,5 @@ namespace Trackster.Model.Requests
     {
         public int user_id { get; set; }
         public int media_id { get; set; }
-        public DateTime added_at { get; set; }
     }
 }

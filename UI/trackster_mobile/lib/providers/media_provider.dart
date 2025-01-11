@@ -1,15 +1,25 @@
 import 'dart:convert';
-import 'package:trackster_mobile/models/language.dart';
-import 'package:trackster_mobile/models/streaming_service.dart';
-import 'package:trackster_mobile/providers/auth_provider.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:trackster_mobile/models/genre.dart';
 import 'package:trackster_mobile/models/media.dart';
 import 'package:trackster_mobile/models/search_result.dart';
 import 'package:trackster_mobile/providers/base_provider.dart';
+import 'package:trackster_mobile/providers/auth_provider.dart';
+import 'package:http/http.dart' as http;
+
+import '../models/language.dart';
+import '../models/streaming_service.dart';
 
 class MediaProvider extends BaseProvider<Media> {
+  List<Media> mediaItems = [];
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  Media? _selectedMedia;
+  Media? get selectedMedia => _selectedMedia;
+
+  int _currentPage = 0;
+  final int _pageSize = 10;
+  bool _hasMore = true;
+
   MediaProvider() : super("Media");
 
   @override
@@ -17,37 +27,43 @@ class MediaProvider extends BaseProvider<Media> {
     return Media.fromJson(data);
   }
 
-  Future<SearchResult<Media>> getMedia({String? fts}) async {
-    var filter = {
-      'IsGenreIncluded': 'true',
-    };
-    if (fts != null && fts.isNotEmpty) {
-      filter['fts'] = fts;
-    }
-    return await get(filter: filter);
-  }
-
+  // Fetch all media with the correct sub-route
   Future<List<Media>> getAllMedia() async {
-    return await getAll();
+    _isLoading = true;
+    notifyListeners(); // Notify listeners to trigger UI update (loading state)
+
+    try {
+      var result = await getAll(subRoute: "Media/GetList");
+      mediaItems = result; // Store fetched media items
+      _isLoading = false; // Set loading to false after data is fetched
+      notifyListeners(); // Notify listeners again to update the UI
+      return result;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow; // Re-throw error if fetching fails
+    }
   }
 
+  // Delete a movie by ID
   Future<void> deleteMovie(int id) async {
     await delete(id);
   }
 
+  // Add a new movie
   Future<void> addMovie(
-    String? title,
-    String? description,
-    DateTime? release_date,
-    String? status,
-    double? rating,
-    String? picture,
-    String? backdrop,
-    Language? language,
-    StreamingService? streaming_service,
-    bool? state,
-    String? state_machine,
-  ) async {
+      String? title,
+      String? description,
+      DateTime? release_date,
+      String? status,
+      double? rating,
+      String? picture,
+      String? backdrop,
+      Language? language,
+      StreamingService? streaming_service,
+      bool? state,
+      String? state_machine,
+      ) async {
     final newMedia = {
       'title': title,
       'description': description,
@@ -62,23 +78,24 @@ class MediaProvider extends BaseProvider<Media> {
       'state_machine': state_machine,
     };
 
-    await insert(newMedia);
+    await insert("Media/AddMedia", newMedia);
   }
 
+  // Update existing media
   Future<void> updateMedia(
-    int media_id,
-    String? title,
-    String? description,
-    DateTime? release_date,
-    String? status,
-    double? rating,
-    String? picture,
-    String? backdrop,
-    Language? language,
-    StreamingService? streaming_service,
-    bool? state,
-    String? state_machine,
-  ) async {
+      int media_id,
+      String? title,
+      String? description,
+      DateTime? release_date,
+      String? status,
+      double? rating,
+      String? picture,
+      String? backdrop,
+      Language? language,
+      StreamingService? streaming_service,
+      bool? state,
+      String? state_machine,
+      ) async {
     final updatedMedia = {
       'media_id': media_id,
       'title': title,
@@ -97,12 +114,46 @@ class MediaProvider extends BaseProvider<Media> {
     await update(media_id, updatedMedia);
   }
 
-  @override
-  Future<Media> getById(int id) async {
-    Media media = await super.getById(id);
-    return media;
+  // Get media by ID
+  Future<Media> getMediaById(int id) async {
+    subRoute: "Media/GetById";
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      Media media = await super.getById("GetById", id);
+      _selectedMedia = media;
+      print("MEDIA: -> $media");
+      return media;  // Ensure the return type is consistent
+    } catch (e) {
+      _selectedMedia = null;
+      return Future.value(null); // Return null wrapped in a Future
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
+  // Fetch media recommendations
+  Future<List<Media>> getRecommendations(int mediaId) async {
+    try {
+      final url = Uri.parse('$baseUrl$endpoint/$mediaId/recommendations');
+      final headers = await getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => Media.fromJson(item)).toList();
+      } else {
+        throw Exception(
+            'Failed to fetch recommendations: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Helper function to get headers (authentication)
   Future<Map<String, String>> getHeaders() async {
     final headers = {
       'Content-Type': 'application/json',
@@ -116,24 +167,5 @@ class MediaProvider extends BaseProvider<Media> {
     }
 
     return headers;
-  }
-
-  Future<List<Media>> getRecommendations(int mediaId) async {
-    try {
-      final url = Uri.parse('$baseUrl$endpoint/$mediaId/recommendations');
-      final headers = await getHeaders();
-      final response = await http.get(url, headers: headers);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-
-        return data.map((item) => Media.fromJson(item)).toList();
-      } else {
-        throw Exception(
-            'Failed to fetch recommendations: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      rethrow;
-    }
   }
 }

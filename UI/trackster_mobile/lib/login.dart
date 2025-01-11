@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:trackster_mobile/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,6 +14,8 @@ class _LoginPageState extends State<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  final AuthProvider _authProvider = AuthProvider();
+
   Future<void> login() async {
     setState(() {
       _isLoading = true;
@@ -23,32 +26,15 @@ class _LoginPageState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     try {
-      final Uri apiUrl = Uri.parse(
-          'https://localhost:7023/User/Login?username=${username}&password=${password}');
+      final user = await _authProvider.login(username, password);
+      print("USER IN LOGIN: $user");
 
-      print("Preparing to make POST request to: $apiUrl");
-      try {
-        final response = await http.post(apiUrl);
-        print("Response Status Code: ${response.statusCode}");
-      } catch (e) {
-        print("Error making POST request: $e");
-      }
-
-      final response = await http
-          .post(apiUrl)
-          .timeout(const Duration(seconds: 10)); // Timeout after 10 seconds
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print("Login successful: $data");
+      if (user != null) {
+        // Successfully logged in, navigate to the home screen
         Navigator.pushReplacementNamed(context, '/home');
-      } else if (response.statusCode == 401) {
-        setState(() {
-          _errorMessage = "Invalid username or password.";
-        });
       } else {
         setState(() {
-          _errorMessage = "Something went wrong. Please try again.";
+          _errorMessage = "Invalid username or password.";
         });
       }
     } catch (e) {
@@ -125,7 +111,7 @@ class _LoginPageState extends State<LoginScreen> {
                         backgroundColor: Colors.white,
                         foregroundColor: Color(0xFF81689D),
                         padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

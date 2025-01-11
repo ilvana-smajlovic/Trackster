@@ -18,6 +18,8 @@ namespace Trackster.Services
 
         public GenreMediaService(TracksterContext context, IMapper mapper) : base(context, mapper)
         {
+            Context = context;
+            Mapper = mapper;
         }
 
         public virtual PagedResult<GenreMedia> GetList(GenreMediaSearchObject searchObject)

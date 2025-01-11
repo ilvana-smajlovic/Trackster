@@ -14,8 +14,8 @@ class UserFavorite {
   UserFavorite({this.favorite_id, this.user, this.media, this.added_at});
 
   factory UserFavorite.fromJson(Map<String, dynamic> json) =>
-      _$UserFavoritesFromJson(json);
-  Map<String, dynamic> toJson() => _$UserFavoritesToJson(this);
+      _$UserFavoriteFromJson(json);
+  Map<String, dynamic> toJson() => _$UserFavoriteToJson(this);
 
   @override
   bool operator ==(Object other) =>
